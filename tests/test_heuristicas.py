@@ -1,19 +1,4 @@
-"""
-Testes Unitários para o Módulo de Heurísticas (heuristicas.py).
-Disciplina: Inteligência Artificial I (2026) - UEM / Faculdade de Engenharia
-Frente 4: Caravela, Rosário Pompílio
-
-Testes Obrigatórios:
-  1. test_h_menor_ou_igual_h_estrela_todos_estados:
-     Verificação exaustiva de que 0 <= h1(s) <= h2(s) <= h*(s) em TODOS os estados
-     alcançáveis de instâncias pequenas (h* calculado com UCS).
-  2. test_heuristicas_instancia_base_e_propriedades:
-     Validação de h0, h1 e h2 na Instância Base oficial (S=4, H=4, 10 contentores)
-     e propriedades de estados terminais e ordenados.
-  3. test_calcular_b_estrela:
-     Validação numérica do factor de ramificação efectivo b* com casos analíticos
-     e propriedades de monotonia.
-"""
+"""Testes das heurísticas e do factor de ramificação efectivo."""
 
 from collections import deque
 from dataclasses import dataclass
@@ -24,18 +9,16 @@ from typing import FrozenSet, List, Tuple
 from heuristicas import calcular_b_estrela, h0, h1, h2
 
 
-# Definição do Estado conforme Contrato Técnico de Integração
 @dataclass(frozen=True)
 class EstadoContentores:
+    """Representa o estado das pilhas e o próximo contentor a levantar."""
+
     pilhas: Tuple[Tuple[int, ...], ...]
     proximo: int
 
 
 class DominioReferencia:
-    """
-    Implementação de referência estrita das regras do Problema P2
-    para cálculo exaustivo de estados alcançáveis e custo óptimo h*(s).
-    """
+    """Implementa as regras do P2 para validar as heurísticas em instâncias pequenas."""
 
     def __init__(
         self,
@@ -137,14 +120,7 @@ class DominioReferencia:
 
 
 def test_h_menor_ou_igual_h_estrela_todos_estados():
-    """
-    Teste Obrigatório 1 (Tarefa 4.3):
-    Gera todos os estados alcançáveis de instâncias pequenas, calcula h*(s)
-    exacto para cada um com UCS e verifica:
-        0 <= h1(s) <= h2(s) <= h*(s)
-    em 100% dos estados gerados.
-    """
-    # Instância Pequena 1: S=3, H=3, 4 contentores
+    """Compara h1 e h2 com o custo óptimo em instâncias pequenas."""
     s_pequena1 = EstadoContentores(
         pilhas=((2, 1), (4, 3), ()),
         proximo=1,
@@ -170,7 +146,6 @@ def test_h_menor_ou_igual_h_estrela_todos_estados():
         assert val_h1 <= val_h2 + 1e-6
         assert val_h2 <= hs + 1e-6
 
-    # Instância Pequena 2: S=3, H=3, 5 contentores com inversões
     s_pequena2 = EstadoContentores(
         pilhas=((3, 1), (5, 2), (4,)),
         proximo=1,
@@ -193,11 +168,7 @@ def test_h_menor_ou_igual_h_estrela_todos_estados():
 
 
 def test_heuristicas_instancia_base_e_propriedades():
-    """
-    Teste Obrigatório 2:
-    Valida o comportamento de h0, h1 e h2 na Instância Base oficial (S=4, H=4, 10 contentores)
-    e testa propriedades essenciais de consistência em estados ordenados e terminais.
-    """
+    """Verifica os valores das heurísticas na instância base e em estados-limite."""
     s_base = EstadoContentores(
         pilhas=((8, 2, 10), (5, 1, 6), (9, 4), (7, 3)),
         proximo=1,
@@ -219,13 +190,11 @@ def test_heuristicas_instancia_base_e_propriedades():
     assert val_h2 == 4.4
     assert 0.0 <= val_h1 <= val_h2 <= 4.8
 
-    # Estado Objectivo deve ter heurística zero
     s_obj = EstadoContentores(pilhas=((), (), (), ()), proximo=11)
     assert h0(s_obj, dom_base) == 0.0
     assert h1(s_obj, dom_base) == 0.0
     assert h2(s_obj, dom_base) == 0.0
 
-    # Pilhas ordenadas devem ter h=0
     s_ordenado = EstadoContentores(
         pilhas=((3, 2, 1), (6, 5, 4), (8, 7)),
         proximo=1,
@@ -235,11 +204,7 @@ def test_heuristicas_instancia_base_e_propriedades():
 
 
 def test_calcular_b_estrela():
-    """
-    Teste Obrigatório 3 (Tarefa 4.3):
-    Valida a implementação da função calcular_b_estrela(N, d) que resolve
-        N + 1 = 1 + b* + (b*)^2 + ... + (b*)^d.
-    """
+    """Valida casos analíticos e valores de referência de b*."""
     assert calcular_b_estrela(N=5, d=1) == 5.0
     assert calcular_b_estrela(N=12, d=1) == 12.0
     assert calcular_b_estrela(N=10, d=10) == 1.0

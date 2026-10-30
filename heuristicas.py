@@ -1,44 +1,25 @@
-"""
-Módulo de Heurísticas para o Problema P2: Reordenação de Contentores no Porto de Maputo.
-Disciplina: Inteligência Artificial I (2026) - UEM / Faculdade de Engenharia
-Frente 4: Caravela, Rosário Pompílio
+"""Heurísticas e métricas de pesquisa para o problema P2.
 
-Este módulo implementa:
-  - h0: Heurística trivial (h0(s) = 0.0), para busca cega / UCS.
-  - h1: Heurística base admissível baseada na contagem de contentores bloqueadores.
-  - h2: Heurística mais informada combinando:
-        1. Custo mínimo real de deslocação do pórtico (1.1 em vez de 1.0).
-        2. Penalização de duplo movimento (+1.1 extra).
-        3. Custo de desvio de contentores refrigerados (+1.1 extra).
-  - calcular_b_estrela: Cálculo numérico do factor de ramificação efectivo b* por bissecção.
+Inclui as heurísticas h0, h1 e h2, bem como o cálculo do factor de
+ramificação efectivo através do método da bissecção.
 """
 
 from typing import Any, Optional, Set, Tuple
 
 
 def h0(estado: Any, problema: Optional[Any] = None) -> float:
-    """
-    Heurística trivial (nula).
-    Garante h0(s) = 0.0 para qualquer estado s.
-    Quando usada no A*, equivale à Busca de Custo Uniforme (UCS).
-    """
+    """Devolve zero para qualquer estado, equivalendo a custo uniforme no A*."""
     return 0.0
 
 
 def h1(estado: Any, problema: Optional[Any] = None) -> float:
-    """
-    Heurística h1 (Admissível):
-    Conta o número de contentores bloqueadores no bloco do terminal.
+    """Estima o custo restante contando os contentores que bloqueiam outros.
 
-    Um contentor c na pilha i é considerado 'bloqueador' se existir algum
-    contentor c' < c abaixo dele nessa mesma pilha i.
-    Como c' tem de ser levantado antes de c, e c está por cima de c',
-    c terá obrigatoriamente de sofrer pelo menos uma acção 'mover' para outra pilha,
-    cujo custo mínimo real é 1.1 >= 1.0.
-
-    Logo, a soma simples de 1.0 por cada contentor bloqueador nunca sobrestima
-    o custo real h*(s) até ao estado objectivo:
-        h1(s) <= h*(s).
+    Um contentor é contabilizado quando existe, abaixo dele na mesma pilha,
+    pelo menos um contentor com identificador inferior. Cada bloqueador exige
+    pelo menos uma deslocação antes de o contentor pretendido poder ser
+    levantado; por isso, a contribuição unitária não excede o custo mínimo
+    dessa deslocação.
     """
     pilhas: Tuple[Tuple[int, ...], ...] = getattr(estado, "pilhas", estado)
     bloqueadores: int = 0
@@ -59,17 +40,17 @@ def _pode_evitar_duplo_movimento(
     num_pilhas: int,
     refrigerados: Set[int],
 ) -> bool:
-    """Verifica se existe pilha de destino onde c não cause bloqueio incontornável."""
+    """Indica se existe um destino permitido sem bloqueio por contentores intermédios."""
     for j in range(num_pilhas):
         if j == idx_origem:
             continue
-        # Contentor refrigerado só pode ir para pilhas 0 ou 1
+        # Os contentores refrigerados só podem ser colocados nas pilhas 0 e 1.
         if c in refrigerados and j not in (0, 1):
             continue
         pilha_dest = pilhas[j]
         if not pilha_dest:
             return True
-        # Bloqueio incontornável: se existir k tal que c_min <= k < c
+        # Um contentor intermédio pode obrigar a deslocar c novamente.
         tem_bloqueio = any(c_min <= k < c for k in pilha_dest)
         if not tem_bloqueio:
             return True
@@ -85,7 +66,7 @@ def _desvio_refrigerado_bloqueado(
     altura_max: int,
     refrigerados: Set[int],
 ) -> bool:
-    """Verifica se a outra tomada eléctrica está saturada com contentores > c_min."""
+    """Verifica se a pilha refrigerada alternativa está cheia e indisponível."""
     if c not in refrigerados or num_pilhas < 2:
         return False
     outra = 1 if idx_origem == 0 else (0 if idx_origem == 1 else None)
@@ -96,13 +77,11 @@ def _desvio_refrigerado_bloqueado(
 
 
 def h2(estado: Any, problema: Optional[Any] = None) -> float:
-    """
-    Heurística h2 (Mais informada e estritamente admissível):
-    Combina três refinamentos admissíveis sobre h1:
+    """Calcula uma estimativa informada com base nos bloqueios e restrições.
 
-    1. Custo mínimo do pórtico: Custo mínimo por movimento é 1.1 (em vez de 1.0).
-    2. Penalização de duplo movimento (+1.1 extra).
-    3. Custo de desvio refrigerado (+1.1 extra).
+    A estimativa considera o custo mínimo de deslocação, a necessidade de
+    movimentos adicionais e as restrições de colocação dos contentores
+    refrigerados.
     """
     pilhas: Tuple[Tuple[int, ...], ...] = getattr(estado, "pilhas", estado)
     refrigerados: Set[int] = getattr(problema, "refrigerados", frozenset({2, 5}))
@@ -117,15 +96,13 @@ def h2(estado: Any, problema: Optional[Any] = None) -> float:
             if not bloqueados_abaixo:
                 continue
 
-            # Melhoria 1: Custo mínimo de deslocação do pórtico = 1.1
+            # O custo mínimo de deslocação entre pilhas é 1.1.
             custo_total += 1.1
             c_min = min(bloqueados_abaixo)
 
-            # Melhoria 2: Penalização de duplo movimento
             if not _pode_evitar_duplo_movimento(contentor, c_min, i, pilhas, num_pilhas, refrigerados):
                 custo_total += 1.1
 
-            # Melhoria 3: Custo de desvio refrigerado
             if _desvio_refrigerado_bloqueado(contentor, c_min, i, pilhas, num_pilhas, altura_maxima, refrigerados):
                 custo_total += 1.1
 
@@ -133,12 +110,10 @@ def h2(estado: Any, problema: Optional[Any] = None) -> float:
 
 
 def calcular_b_estrela(N: int, d: int, tol: float = 1e-7, max_iter: int = 100) -> float:
-    """
-    Calcula numericamente o factor de ramificação efectivo b* usando o método da bissecção.
+    """Calcula o factor de ramificação efectivo para N nós e profundidade d.
 
-    Equação a resolver:
-        N + 1 = 1 + b* + (b*)^2 + ... + (b*)^d
-        <=> N = b* + (b*)^2 + ... + (b*)^d
+    Resolve por bissecção a equação N = b + b² + ... + bᵈ. Devolve 1.0
+    quando N ou d não são positivos.
     """
     if d <= 0 or N <= 0:
         return 1.0
