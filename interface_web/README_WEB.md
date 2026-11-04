@@ -42,3 +42,4 @@ http://127.0.0.1:8000
      1. Nós expandidos em escala logarítmica ($\log_{10}$);
      2. Fronteira Máxima: A\* $O(b^d)$ vs. IDA\* $O(d)$;
      3. Rácio de qualidade da solução ($C / C^*$).
+

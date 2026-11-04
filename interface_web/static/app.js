@@ -113,7 +113,7 @@ async function loadInstances() {
 async function runSimulation(autoPlay = false) {
   stopPlayback();
   const btnLabel = document.getElementById("btn-solve-label");
-  if (btnLabel) btnLabel.textContent = "A calcular no motor Python...";
+  if (btnLabel) btnLabel.textContent = "A simular...";
 
   try {
     const cfg = state.instanceConfig;
@@ -151,7 +151,7 @@ async function runSimulation(autoPlay = false) {
   } catch (err) {
     alert(`Erro ao executar algoritmo: ${err.message}`);
   } finally {
-    if (btnLabel) btnLabel.textContent = "Resolver e simular solução";
+    if (btnLabel) btnLabel.textContent = "Simular";
   }
 }
 
@@ -448,36 +448,21 @@ function renderLeftPanel() {
   });
 
   // Regras no modo manual
-  document.getElementById("rule-h-text").textContent = `H = ${state.instanceConfig.H} respeitada`;
-  document.getElementById("rule-lift-text").textContent = `Custo ${state.mods.liftCost ? "0,5" : "0,0"} · apenas próximo`;
+  document.getElementById("rule-h-text").textContent = `H = ${state.instanceConfig.H}`;
+  document.getElementById("rule-lift-text").textContent = `Custo ${state.mods.liftCost ? "0,5" : "0,0"} · próximo`;
   document.getElementById("rule-reefer-text").textContent = state.mods.reefer3
-    ? "Pilhas 1, 2 e 3 (mod. defesa)"
-    : "Só Pilhas 1 e 2 (tomadas)";
+    ? "Pilhas 1, 2 e 3"
+    : "Pilhas 1 e 2";
 
   document.getElementById("manual-cost-display").textContent = fmt(state.manualCost);
   document.getElementById("manual-optimum-display").textContent = fmt(state.optimumReferenceCost);
 
   // Inspector Heurístico
   const stepData = getCurrentStepData();
-  document.getElementById("inspector-step-badge").textContent = `ESTADO S${String(stepData.passo).padStart(2, "0")}`;
   document.getElementById("insp-g").textContent = fmt(stepData.g);
   document.getElementById("insp-h1").textContent = fmt(stepData.h1);
   document.getElementById("insp-h2").textContent = fmt(stepData.h2);
   document.getElementById("insp-f").textContent = fmt(stepData.f);
-  document.getElementById("insp-formula").textContent =
-    state.algo === "Gulosa"
-      ? `f(s) = ${state.heuristic}(s)`
-      : `f(s) = g(s) + ${state.heuristic}(s)`;
-
-  // Nota de solução
-  const noteEl = document.getElementById("solver-note-text");
-  if (state.simResult) {
-    if (state.simResult.resolvido) {
-      noteEl.textContent = `${state.simResult.algoritmo} (${state.simResult.heuristica}) · custo ${fmt(state.simResult.custo)} em ${state.simResult.comprimento} acções`;
-    } else {
-      noteEl.textContent = `Sem solução (${state.simResult.status})`;
-    }
-  }
 }
 
 function getCurrentStepData() {
@@ -525,16 +510,15 @@ function renderYard() {
   const doneAll = stepData.proximo > maxN;
   document.getElementById("ribbon-target").textContent = doneAll
     ? "Concluído ✓"
-    : `Contentor #${stepData.proximo}`;
+    : `#${stepData.proximo}`;
   document.getElementById("ribbon-step").textContent =
     state.mode === "manual"
-      ? `${state.manualActions.length} acções`
+      ? `${state.manualActions.length}`
       : `${stepData.passo} / ${totalSteps}`;
   document.getElementById("ribbon-cost").textContent = fmt(stepData.g);
 
   const act = stepData.accao;
   const lastActEl = document.getElementById("ribbon-last-action");
-  const lastCostEl = document.getElementById("ribbon-last-cost");
   const craneBadge = document.getElementById("crane-action-badge");
 
   if (act) {
@@ -543,40 +527,28 @@ function renderYard() {
         ? `mover(${act.origem + 1} → ${act.destino + 1})`
         : `levantar(${act.origem + 1})`;
     lastActEl.textContent = `${desc} · #${boxLabel(act.contentor)}`;
-    lastCostEl.textContent = `Custo +${fmt(act.custo)} · g(n) = ${fmt(stepData.g)}`;
-    craneBadge.textContent = desc.toUpperCase();
+    if (craneBadge) craneBadge.textContent = desc.toUpperCase();
   } else {
-    lastActEl.textContent = "— sistema pronto —";
-    lastCostEl.textContent = "Estado inicial S00";
-    craneBadge.textContent = "PRONTO";
+    lastActEl.textContent = "—";
+    if (craneBadge) craneBadge.textContent = "";
   }
 
-  document.getElementById("yard-instance-title").textContent = `${cfg.nome} · Pátio & Pórtico RTG (S=${cfg.S}, H=${cfg.H})`;
+  document.getElementById("yard-instance-title").textContent = "Pátio de Contentores";
 
   // Posição do Trolley do Pórtico RTG
   const activeStackIdx =
     state.mode === "manual" && state.manualSelectedStack !== null
       ? state.manualSelectedStack
       : act
-      ? act.destino !== null && act.destino !== undefined
-        ? act.destino
-        : act.origem
-      : 0;
+        ? act.destino !== null && act.destino !== undefined
+          ? act.destino
+          : act.origem
+        : 0;
 
   const pct = ((activeStackIdx + 0.5) / cfg.S) * 100;
   const trolleyEl = document.getElementById("crane-trolley");
   if (trolleyEl) {
     trolleyEl.style.left = `${Math.min(92, Math.max(8, pct))}%`;
-  }
-
-  // Régua de custo de deslocação
-  const rulerEl = document.getElementById("distance-ruler");
-  if (rulerEl) {
-    rulerEl.innerHTML = Array.from({ length: cfg.S }, (_, idx) => {
-      const dist = Math.abs(activeStackIdx - idx);
-      const c = dist === 0 ? "origem" : `mover: +${fmt(1 + 0.1 * dist)}`;
-      return `<span>P${idx + 1} (${c})</span>`;
-    }).join("");
   }
 
   // Renderização das Pilhas
@@ -605,7 +577,7 @@ function renderYard() {
       col.title = blockReason;
     }
 
-    // Indicador no topo da pilha
+    // Indicador compacto no topo da pilha (apenas Modo Manual)
     const indicator = document.createElement("div");
     indicator.className = "move-indicator";
 
@@ -616,8 +588,7 @@ function renderYard() {
       const liftBtn = document.createElement("button");
       liftBtn.type = "button";
       liftBtn.className = "lift-btn";
-      const lCost = state.mods.liftCost ? "0,5" : "0,0";
-      liftBtn.textContent = `▲ Levantar #${topBox} (${lCost})`;
+      liftBtn.textContent = `▲ Levantar #${topBox}`;
       liftBtn.addEventListener("click", (ev) => {
         ev.stopPropagation();
         handleManualLift(i);
@@ -626,12 +597,12 @@ function renderYard() {
     } else if (isValidDest) {
       const costBadge = document.createElement("span");
       costBadge.className = "valid-badge";
-      costBadge.textContent = `Mover aqui · +${fmt(1 + 0.1 * Math.abs(selIdx - i))}`;
+      costBadge.textContent = `+${fmt(1 + 0.1 * Math.abs(selIdx - i))}`;
       indicator.appendChild(costBadge);
     } else if (blockReason) {
       const invBadge = document.createElement("span");
       invBadge.className = "invalid-badge";
-      invBadge.textContent = "✕ BLOQUEADO";
+      invBadge.textContent = "Bloqueado";
       indicator.appendChild(invBadge);
     }
 
@@ -669,14 +640,13 @@ function renderYard() {
     }
     col.appendChild(slotsWrap);
 
-    // Base da Pilha
+    // Base minimalista da Pilha (P1 ⚡ à esquerda e 0/4 à direita)
     const hasPower = i === 0 || i === 1 || (state.mods.reefer3 && i === 2);
     const baseEl = document.createElement("div");
     baseEl.className = `stack-base ${hasPower ? "powered" : ""}`;
     baseEl.innerHTML = `
-      <strong>PILHA ${i + 1}</strong>
-      <span>${pilha.length} / ${cfg.H}</span>
-      ${hasPower ? '<span class="power-tag">⚡ TOMADA R</span>' : ""}
+      <span class="stack-name">P${i + 1}${hasPower ? ' <span class="power-icon" title="Tomada elétrica para refrigerados">⚡</span>' : ""}</span>
+      <span class="stack-count">${pilha.length}/${cfg.H}</span>
     `;
     col.appendChild(baseEl);
 
@@ -689,10 +659,10 @@ function renderYard() {
   if (isManual && selIdx !== null && state.manualStacks[selIdx]?.length) {
     const selBox = state.manualStacks[selIdx].at(-1);
     msgEl.classList.remove("hidden");
-    msgEl.innerHTML = `Contentor <b>#${boxLabel(selBox)}</b> seleccionado no topo da <b>Pilha ${selIdx + 1}</b> · clique numa pilha a verde para mover ou passe o rato nas vermelhas para ver o motivo do bloqueio.`;
+    msgEl.innerHTML = `Contentor <b>#${boxLabel(selBox)}</b> seleccionado em <b>P${selIdx + 1}</b> · clique numa pilha a verde para mover.`;
   } else if (isManual && doneAll) {
     msgEl.classList.remove("hidden");
-    msgEl.innerHTML = `🎉 <b>Operação concluída!</b> Todos os contentores foram levantados. O teu custo total foi <b>${fmt(state.manualCost)}</b> (Óptimo de referência: <b>${fmt(state.optimumReferenceCost)}</b>).`;
+    msgEl.innerHTML = `✓ Concluído! Custo total: <b>${fmt(state.manualCost)}</b> (Óptimo: <b>${fmt(state.optimumReferenceCost)}</b>).`;
   } else {
     msgEl.classList.add("hidden");
   }
@@ -701,7 +671,7 @@ function renderYard() {
 function renderPlaybackControls() {
   const playLabel = document.getElementById("label-play");
   const playIcon = document.getElementById("icon-play");
-  if (playLabel) playLabel.textContent = state.playing ? "Pausa" : "Reproduzir";
+  if (playLabel) playLabel.textContent = state.playing ? "Pausa" : "Play";
   if (playIcon) {
     playIcon.innerHTML = state.playing
       ? '<path d="M9 7v10M15 7v10" />'
@@ -734,35 +704,29 @@ function renderRightPanel() {
 
   if (!isManual && res) {
     document.getElementById("kpi-cost").textContent = res.resolvido ? fmt(res.custo) : "—";
-    document.getElementById("kpi-status").textContent = res.status.toUpperCase();
     document.getElementById("kpi-length").textContent = String(res.comprimento);
     document.getElementById("kpi-expanded").textContent = fmtInt(res.nos_expandidos);
-    document.getElementById("kpi-expanded-sub").textContent = `${res.algoritmo} (${res.heuristica})`;
     document.getElementById("kpi-generated").textContent = fmtInt(res.nos_gerados);
-    document.getElementById("kpi-reexpanded-sub").textContent = `Re-exp.: ${fmtInt(res.nos_reexpandidos)}`;
     document.getElementById("kpi-frontier").textContent = fmtInt(res.max_fronteira);
-    document.getElementById("kpi-time").textContent = `${fmt(res.tempo_s, 4)}s`;
-    document.getElementById("kpi-memory").textContent = `${fmt(res.memoria_mb, 3)} MB`;
+    document.getElementById("kpi-time").textContent = `${fmt(res.tempo_s, 3)}s`;
+    document.getElementById("kpi-memory").textContent = `${fmt(res.memoria_mb, 2)} MB`;
     document.getElementById("kpi-bstar").textContent = `b* = ${fmt(res.b_estrela, 4)}`;
   } else if (isManual) {
     document.getElementById("kpi-cost").textContent = fmt(state.manualCost);
-    document.getElementById("kpi-status").textContent = "OPERADOR MANUAL";
     document.getElementById("kpi-length").textContent = String(state.manualActions.length);
   }
 
   const actions = isManual ? state.manualActions : res?.acoes || [];
   const activeStep = isManual ? state.manualActions.length : state.step;
 
-  document.getElementById("log-count-badge").textContent = `${actions.length} REGISTOS`;
   const logContainer = document.getElementById("action-log");
   logContainer.innerHTML = "";
 
   if (!actions.length) {
-    logContainer.innerHTML = `<div class="empty-log">${
-      isManual
-        ? "Nenhuma operação manual registada. Seleccione um contentor do topo para começar."
-        : "Nenhuma acção disponível."
-    }</div>`;
+    logContainer.innerHTML = `<div class="empty-log">${isManual
+      ? "Seleccione um contentor no pátio para mover."
+      : "Sem acções."
+      }</div>`;
   } else {
     actions.forEach((a, idx) => {
       const stepNum = idx + 1;
@@ -774,15 +738,8 @@ function renderRightPanel() {
           : `levantar(${a.origem + 1})`;
       row.innerHTML = `
         <span class="log-index">${String(stepNum).padStart(2, "0")}</span>
-        <span class="action-type ${a.tipo}">${a.tipo === "mover" ? "MOV" : "LEV"}</span>
-        <div>
-          <b>${desc}</b>
-          <small>Contentor #${boxLabel(a.contentor)}</small>
-        </div>
-        <div class="log-cost">
-          <b>+${fmt(a.custo)}</b>
-          <small>g = ${fmt(a.g_acumulado)}</small>
-        </div>
+        <span class="log-action-text"><b>${desc}</b> <small>#${boxLabel(a.contentor)}</small></span>
+        <span class="log-cost">+${fmt(a.custo)}</span>
       `;
       if (!isManual) {
         row.addEventListener("click", () => {
@@ -798,14 +755,12 @@ function renderRightPanel() {
   // Patamares limite_f do IDA*
   const threshBox = document.getElementById("thresholds-box");
   const threshList = document.getElementById("thresholds-list");
-  const threshSum = document.getElementById("thresholds-summary");
 
   if (!isManual && res && res.algoritmo === "IDA*" && res.patamares_f && res.patamares_f.length) {
     threshBox.classList.remove("hidden");
     threshList.innerHTML = res.patamares_f
       .map((t, idx) => `<b>${fmt(t, 2)}${idx < res.patamares_f.length - 1 ? " →" : ""}</b>`)
       .join("");
-    threshSum.textContent = `Solução óptima encontrada na ${res.patamares_f.length}.ª iteração (limite_f = ${fmt(res.custo, 2)})`;
   } else {
     threshBox.classList.add("hidden");
   }
@@ -817,9 +772,7 @@ function renderRightPanel() {
 
 async function runLabBenchmark() {
   const btn = document.getElementById("btn-run-benchmark");
-  const statusBadge = document.getElementById("lab-status-badge");
-  if (btn) btn.textContent = "⏳ A executar os 7 algoritmos...";
-  if (statusBadge) statusBadge.textContent = "A EXECUTAR";
+  if (btn) btn.textContent = "⏳ A comparar...";
 
   try {
     const cfg = state.instanceConfig;
@@ -837,15 +790,14 @@ async function runLabBenchmark() {
   } catch (err) {
     alert(`Erro na bateria experimental: ${err.message}`);
   } finally {
-    if (btn) btn.textContent = "▶ Executar Bateria ao Vivo na Instância Activa";
-    if (statusBadge) statusBadge.textContent = "VALIDADO";
+    if (btn) btn.textContent = "▶ Executar Comparação";
   }
 }
 
 function renderLabView() {
   const cfg = state.instanceConfig;
   document.getElementById("lab-table-subtitle").textContent =
-    `Resultados consolidados — ${cfg.nome} (S=${cfg.S}, H=${cfg.H})`;
+    `Resultados — ${cfg.nome}`;
   document.getElementById("lab-runs-count").textContent = String(state.labResults.length);
   document.getElementById("lab-best-cost").textContent = fmt(state.labOptimum);
 
