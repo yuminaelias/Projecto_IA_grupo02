@@ -181,51 +181,62 @@ body {
 }
 
 /* BOTÕES DE ALGORITMO LIMPOS */
+#algo-grid,
 .algo-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px;
+  gap: 8px;
 }
 
+#algo-grid button,
 .algo-grid button {
   background: #f8fafc;
-  border: 1px solid var(--slate-300);
+  border: 1.5px solid var(--slate-300);
   border-radius: 6px;
-  padding: 8px 6px;
+  padding: 8px 0;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 12.5px;
   color: var(--navy-900);
   text-align: center;
   cursor: pointer;
   transition: all 0.12s ease;
 }
 
+#algo-grid button.span-full,
 .algo-grid button.span-full {
   grid-column: span 2;
 }
 
+#algo-grid button:hover,
 .algo-grid button:hover {
-  border-color: var(--cyan-600);
+  border-color: #0284c7;
+  background: #f0f9ff;
 }
 
+#algo-grid button.selected,
 .algo-grid button.selected {
-  background: var(--cyan-600);
-  border-color: var(--cyan-600);
-  color: #ffffff;
+  background: #e0f2fe;
+  border-color: #0284c7;
+  color: #0369a1;
+  box-shadow: inset 0 0 0 1px #0284c7;
 }
 
 /* LINHA COMPACTA DE HEURÍSTICAS (h0, h1, h2) */
-.heuristics-row {
+#heuristic-grid,
+.heuristics-row,
+.heuristics {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
+  gap: 8px;
 }
 
-.heuristics-row button {
+#heuristic-grid button,
+.heuristics-row button,
+.heuristics button {
   background: #f8fafc;
-  border: 1px solid var(--slate-300);
+  border: 1.5px solid var(--slate-300);
   border-radius: 6px;
-  padding: 8px 4px;
+  padding: 8px 0;
   font-family: var(--font-mono);
   font-size: 12.5px;
   font-weight: 700;
@@ -235,17 +246,25 @@ body {
   transition: all 0.12s ease;
 }
 
-.heuristics-row button:hover {
-  border-color: var(--cyan-600);
+#heuristic-grid button:hover,
+.heuristics-row button:hover,
+.heuristics button:hover {
+  border-color: #0284c7;
+  background: #f0f9ff;
 }
 
-.heuristics-row button.selected {
-  background: var(--cyan-600);
-  border-color: var(--cyan-600);
-  color: #ffffff;
+#heuristic-grid button.selected,
+.heuristics-row button.selected,
+.heuristics button.selected {
+  background: #e0f2fe;
+  border-color: #0284c7;
+  color: #0369a1;
+  box-shadow: inset 0 0 0 1px #0284c7;
 }
 
-.heuristics-row button.disabled-h {
+#heuristic-grid button.disabled-h,
+.heuristics-row button.disabled-h,
+.heuristics button.disabled-h {
   opacity: 0.4;
   pointer-events: none;
 }
@@ -652,10 +671,12 @@ body {
 }
 
 /* PILHAS E CONTENTORES */
+#stacks-container,
 .stacks {
   display: grid;
   grid-template-columns: repeat(var(--num-stacks, 4), 1fr);
   gap: 10px;
+  min-height: 256px;
   background: #f1f5f9;
   border: 1px solid var(--slate-300);
   border-top: none;

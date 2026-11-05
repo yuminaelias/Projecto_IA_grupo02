@@ -582,6 +582,11 @@ class SimuladorHTTPRequestHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(DIR_STATIC), **kwargs)
 
+    def end_headers(self) -> None:
+        self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+        self.send_header("Pragma", "no-cache")
+        super().end_headers()
+
     def log_message(self, format: str, *args) -> None:
         # Log conciso no terminal
         sys.stderr.write(f"[TOS-PortMaputo] {self.address_string()} - {format % args}\n")

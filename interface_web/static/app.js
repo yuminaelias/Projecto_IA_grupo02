@@ -16,6 +16,11 @@ const fmtInt = (n) => {
   return Number(n).toLocaleString("pt-PT");
 };
 
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
 const state = {
   mode: "sim", // 'sim' | 'manual' | 'lab'
   instances: {},
@@ -112,8 +117,9 @@ async function loadInstances() {
 
 async function runSimulation(autoPlay = false) {
   stopPlayback();
-  const btnLabel = document.getElementById("btn-solve-label");
-  if (btnLabel) btnLabel.textContent = "A simular...";
+  const btnSolve = document.getElementById("btn-solve");
+  if (btnSolve) btnSolve.disabled = true;
+  setText("btn-solve-label", "A simular...");
 
   try {
     const cfg = state.instanceConfig;
@@ -149,9 +155,10 @@ async function runSimulation(autoPlay = false) {
       startPlayback();
     }
   } catch (err) {
-    alert(`Erro ao executar algoritmo: ${err.message}`);
+    console.error("Erro ao executar algoritmo:", err);
   } finally {
-    if (btnLabel) btnLabel.textContent = "Simular";
+    if (btnSolve) btnSolve.disabled = false;
+    setText("btn-solve-label", "Simular");
   }
 }
 
@@ -409,8 +416,8 @@ async function handleManualHint() {
 
 function renderAll() {
   const isLab = state.mode === "lab";
-  document.getElementById("workspace-view").classList.toggle("hidden", isLab);
-  document.getElementById("lab-view").classList.toggle("hidden", !isLab);
+  document.getElementById("workspace-view")?.classList.toggle("hidden", isLab);
+  document.getElementById("lab-view")?.classList.toggle("hidden", !isLab);
 
   document.querySelectorAll(".mode-tabs button").forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.mode === state.mode);
@@ -422,9 +429,9 @@ function renderAll() {
   }
 
   const isManual = state.mode === "manual";
-  document.getElementById("left-sim-panel").classList.toggle("hidden", isManual);
-  document.getElementById("left-manual-panel").classList.toggle("hidden", !isManual);
-  document.getElementById("playback-bar").classList.toggle("disabled", isManual);
+  document.getElementById("left-sim-panel")?.classList.toggle("hidden", isManual);
+  document.getElementById("left-manual-panel")?.classList.toggle("hidden", !isManual);
+  document.getElementById("playback-bar")?.classList.toggle("disabled", isManual);
 
   renderLeftPanel();
   renderYard();
@@ -448,21 +455,22 @@ function renderLeftPanel() {
   });
 
   // Regras no modo manual
-  document.getElementById("rule-h-text").textContent = `H = ${state.instanceConfig.H}`;
-  document.getElementById("rule-lift-text").textContent = `Custo ${state.mods.liftCost ? "0,5" : "0,0"} · próximo`;
-  document.getElementById("rule-reefer-text").textContent = state.mods.reefer3
-    ? "Pilhas 1, 2 e 3"
-    : "Pilhas 1 e 2";
+  setText("rule-h-text", `H = ${state.instanceConfig.H}`);
+  setText("rule-lift-text", `Custo ${state.mods.liftCost ? "0,5" : "0,0"} · próximo`);
+  setText(
+    "rule-reefer-text",
+    state.mods.reefer3 ? "Pilhas 1, 2 e 3" : "Pilhas 1 e 2"
+  );
 
-  document.getElementById("manual-cost-display").textContent = fmt(state.manualCost);
-  document.getElementById("manual-optimum-display").textContent = fmt(state.optimumReferenceCost);
+  setText("manual-cost-display", fmt(state.manualCost));
+  setText("manual-optimum-display", fmt(state.optimumReferenceCost));
 
   // Inspector Heurístico
   const stepData = getCurrentStepData();
-  document.getElementById("insp-g").textContent = fmt(stepData.g);
-  document.getElementById("insp-h1").textContent = fmt(stepData.h1);
-  document.getElementById("insp-h2").textContent = fmt(stepData.h2);
-  document.getElementById("insp-f").textContent = fmt(stepData.f);
+  setText("insp-g", fmt(stepData.g));
+  setText("insp-h1", fmt(stepData.h1));
+  setText("insp-h2", fmt(stepData.h2));
+  setText("insp-f", fmt(stepData.f));
 }
 
 function getCurrentStepData() {
@@ -471,7 +479,7 @@ function getCurrentStepData() {
     const hSel = state.heuristic === "h0" ? h.h0 : state.heuristic === "h1" ? h.h1 : h.h2;
     return {
       passo: state.manualActions.length,
-      pilhas: state.manualStacks,
+      pilhas: state.manualStacks.length ? state.manualStacks : state.instanceConfig.pilhas,
       proximo: state.manualProximo,
       accao: state.manualActions.at(-1) || null,
       g: state.manualCost,
@@ -508,32 +516,29 @@ function renderYard() {
 
   // Ribbon superior
   const doneAll = stepData.proximo > maxN;
-  document.getElementById("ribbon-target").textContent = doneAll
-    ? "Concluído ✓"
-    : `#${stepData.proximo}`;
-  document.getElementById("ribbon-step").textContent =
+  setText("ribbon-target", doneAll ? "Concluído ✓" : `#${stepData.proximo}`);
+  setText(
+    "ribbon-step",
     state.mode === "manual"
       ? `${state.manualActions.length}`
-      : `${stepData.passo} / ${totalSteps}`;
-  document.getElementById("ribbon-cost").textContent = fmt(stepData.g);
+      : `${stepData.passo} / ${totalSteps}`
+  );
+  setText("ribbon-cost", fmt(stepData.g));
 
   const act = stepData.accao;
-  const lastActEl = document.getElementById("ribbon-last-action");
-  const craneBadge = document.getElementById("crane-action-badge");
-
   if (act) {
     const desc =
       act.tipo === "mover"
         ? `mover(${act.origem + 1} → ${act.destino + 1})`
         : `levantar(${act.origem + 1})`;
-    lastActEl.textContent = `${desc} · #${boxLabel(act.contentor)}`;
-    if (craneBadge) craneBadge.textContent = desc.toUpperCase();
+    setText("ribbon-last-action", `${desc} · #${boxLabel(act.contentor)}`);
+    setText("crane-action-badge", desc.toUpperCase());
   } else {
-    lastActEl.textContent = "—";
-    if (craneBadge) craneBadge.textContent = "";
+    setText("ribbon-last-action", "—");
+    setText("crane-action-badge", "");
   }
 
-  document.getElementById("yard-instance-title").textContent = "Pátio de Contentores";
+  setText("yard-instance-title", "Pátio de Contentores");
 
   // Posição do Trolley do Pórtico RTG
   const activeStackIdx =
@@ -553,6 +558,7 @@ function renderYard() {
 
   // Renderização das Pilhas
   const stacksContainer = document.getElementById("stacks-container");
+  if (!stacksContainer) return;
   stacksContainer.style.setProperty("--num-stacks", cfg.S);
   stacksContainer.innerHTML = "";
 
@@ -656,22 +662,23 @@ function renderYard() {
 
   // Mensagem de seleção no Modo Manual
   const msgEl = document.getElementById("selection-message");
-  if (isManual && selIdx !== null && state.manualStacks[selIdx]?.length) {
-    const selBox = state.manualStacks[selIdx].at(-1);
-    msgEl.classList.remove("hidden");
-    msgEl.innerHTML = `Contentor <b>#${boxLabel(selBox)}</b> seleccionado em <b>P${selIdx + 1}</b> · clique numa pilha a verde para mover.`;
-  } else if (isManual && doneAll) {
-    msgEl.classList.remove("hidden");
-    msgEl.innerHTML = `✓ Concluído! Custo total: <b>${fmt(state.manualCost)}</b> (Óptimo: <b>${fmt(state.optimumReferenceCost)}</b>).`;
-  } else {
-    msgEl.classList.add("hidden");
+  if (msgEl) {
+    if (isManual && selIdx !== null && state.manualStacks[selIdx]?.length) {
+      const selBox = state.manualStacks[selIdx].at(-1);
+      msgEl.classList.remove("hidden");
+      msgEl.innerHTML = `Contentor <b>#${boxLabel(selBox)}</b> seleccionado em <b>P${selIdx + 1}</b> · clique numa pilha a verde para mover.`;
+    } else if (isManual && doneAll) {
+      msgEl.classList.remove("hidden");
+      msgEl.innerHTML = `✓ Concluído! Custo total: <b>${fmt(state.manualCost)}</b> (Óptimo: <b>${fmt(state.optimumReferenceCost)}</b>).`;
+    } else {
+      msgEl.classList.add("hidden");
+    }
   }
 }
 
 function renderPlaybackControls() {
-  const playLabel = document.getElementById("label-play");
+  setText("label-play", state.playing ? "Pausa" : "Play");
   const playIcon = document.getElementById("icon-play");
-  if (playLabel) playLabel.textContent = state.playing ? "Pausa" : "Play";
   if (playIcon) {
     playIcon.innerHTML = state.playing
       ? '<path d="M9 7v10M15 7v10" />'
@@ -703,66 +710,70 @@ function renderRightPanel() {
   const res = state.simResult;
 
   if (!isManual && res) {
-    document.getElementById("kpi-cost").textContent = res.resolvido ? fmt(res.custo) : "—";
-    document.getElementById("kpi-length").textContent = String(res.comprimento);
-    document.getElementById("kpi-expanded").textContent = fmtInt(res.nos_expandidos);
-    document.getElementById("kpi-generated").textContent = fmtInt(res.nos_gerados);
-    document.getElementById("kpi-frontier").textContent = fmtInt(res.max_fronteira);
-    document.getElementById("kpi-time").textContent = `${fmt(res.tempo_s, 3)}s`;
-    document.getElementById("kpi-memory").textContent = `${fmt(res.memoria_mb, 2)} MB`;
-    document.getElementById("kpi-bstar").textContent = `b* = ${fmt(res.b_estrela, 4)}`;
+    setText("kpi-cost", res.resolvido ? fmt(res.custo) : "—");
+    setText("kpi-length", String(res.comprimento));
+    setText("kpi-expanded", fmtInt(res.nos_expandidos));
+    setText("kpi-generated", fmtInt(res.nos_gerados));
+    setText("kpi-frontier", fmtInt(res.max_fronteira));
+    setText("kpi-time", `${fmt(res.tempo_s, 3)}s`);
+    setText("kpi-memory", `${fmt(res.memoria_mb, 2)} MB`);
+    setText("kpi-bstar", `b* = ${fmt(res.b_estrela, 4)}`);
   } else if (isManual) {
-    document.getElementById("kpi-cost").textContent = fmt(state.manualCost);
-    document.getElementById("kpi-length").textContent = String(state.manualActions.length);
+    setText("kpi-cost", fmt(state.manualCost));
+    setText("kpi-length", String(state.manualActions.length));
   }
 
   const actions = isManual ? state.manualActions : res?.acoes || [];
   const activeStep = isManual ? state.manualActions.length : state.step;
 
   const logContainer = document.getElementById("action-log");
-  logContainer.innerHTML = "";
+  if (logContainer) {
+    logContainer.innerHTML = "";
 
-  if (!actions.length) {
-    logContainer.innerHTML = `<div class="empty-log">${isManual
-      ? "Seleccione um contentor no pátio para mover."
-      : "Sem acções."
-      }</div>`;
-  } else {
-    actions.forEach((a, idx) => {
-      const stepNum = idx + 1;
-      const row = document.createElement("div");
-      row.className = `log-row ${stepNum === activeStep ? "active" : ""} ${stepNum < activeStep ? "past" : ""}`;
-      const desc =
-        a.tipo === "mover"
-          ? `mover(${a.origem + 1} → ${a.destino + 1})`
-          : `levantar(${a.origem + 1})`;
-      row.innerHTML = `
-        <span class="log-index">${String(stepNum).padStart(2, "0")}</span>
-        <span class="log-action-text"><b>${desc}</b> <small>#${boxLabel(a.contentor)}</small></span>
-        <span class="log-cost">+${fmt(a.custo)}</span>
-      `;
-      if (!isManual) {
-        row.addEventListener("click", () => {
-          stopPlayback();
-          state.step = stepNum;
-          renderAll();
-        });
-      }
-      logContainer.appendChild(row);
-    });
+    if (!actions.length) {
+      logContainer.innerHTML = `<div class="empty-log">${isManual
+        ? "Seleccione um contentor no pátio para mover."
+        : "Sem acções."
+        }</div>`;
+    } else {
+      actions.forEach((a, idx) => {
+        const stepNum = idx + 1;
+        const row = document.createElement("div");
+        row.className = `log-row ${stepNum === activeStep ? "active" : ""} ${stepNum < activeStep ? "past" : ""}`;
+        const desc =
+          a.tipo === "mover"
+            ? `mover(${a.origem + 1} → ${a.destino + 1})`
+            : `levantar(${a.origem + 1})`;
+        row.innerHTML = `
+          <span class="log-index">${String(stepNum).padStart(2, "0")}</span>
+          <span class="log-action-text"><b>${desc}</b> <small>#${boxLabel(a.contentor)}</small></span>
+          <span class="log-cost">+${fmt(a.custo)}</span>
+        `;
+        if (!isManual) {
+          row.addEventListener("click", () => {
+            stopPlayback();
+            state.step = stepNum;
+            renderAll();
+          });
+        }
+        logContainer.appendChild(row);
+      });
+    }
   }
 
   // Patamares limite_f do IDA*
   const threshBox = document.getElementById("thresholds-box");
   const threshList = document.getElementById("thresholds-list");
 
-  if (!isManual && res && res.algoritmo === "IDA*" && res.patamares_f && res.patamares_f.length) {
-    threshBox.classList.remove("hidden");
-    threshList.innerHTML = res.patamares_f
-      .map((t, idx) => `<b>${fmt(t, 2)}${idx < res.patamares_f.length - 1 ? " →" : ""}</b>`)
-      .join("");
-  } else {
-    threshBox.classList.add("hidden");
+  if (threshBox && threshList) {
+    if (!isManual && res && res.algoritmo === "IDA*" && res.patamares_f && res.patamares_f.length) {
+      threshBox.classList.remove("hidden");
+      threshList.innerHTML = res.patamares_f
+        .map((t, idx) => `<b>${fmt(t, 2)}${idx < res.patamares_f.length - 1 ? " →" : ""}</b>`)
+        .join("");
+    } else {
+      threshBox.classList.add("hidden");
+    }
   }
 }
 
@@ -771,8 +782,7 @@ function renderRightPanel() {
 // ============================================================================
 
 async function runLabBenchmark() {
-  const btn = document.getElementById("btn-run-benchmark");
-  if (btn) btn.textContent = "⏳ A comparar...";
+  setText("btn-run-benchmark", "⏳ A comparar...");
 
   try {
     const cfg = state.instanceConfig;
@@ -788,18 +798,17 @@ async function runLabBenchmark() {
     state.labOptimum = data.custo_optimo || 4.8;
     renderLabView();
   } catch (err) {
-    alert(`Erro na bateria experimental: ${err.message}`);
+    console.error("Erro na bateria experimental:", err);
   } finally {
-    if (btn) btn.textContent = "▶ Executar Comparação";
+    setText("btn-run-benchmark", "▶ Executar Comparação");
   }
 }
 
 function renderLabView() {
   const cfg = state.instanceConfig;
-  document.getElementById("lab-table-subtitle").textContent =
-    `Resultados — ${cfg.nome}`;
-  document.getElementById("lab-runs-count").textContent = String(state.labResults.length);
-  document.getElementById("lab-best-cost").textContent = fmt(state.labOptimum);
+  setText("lab-table-subtitle", `Resultados — ${cfg.nome}`);
+  setText("lab-runs-count", String(state.labResults.length));
+  setText("lab-best-cost", fmt(state.labOptimum));
 
   const tbody = document.getElementById("lab-table-body");
   tbody.innerHTML = "";
@@ -1163,8 +1172,10 @@ function setupEvents() {
 
 async function initApp() {
   setupEvents();
+  renderAll();
   await loadInstances();
   resetManualMode();
+  renderAll();
   await runSimulation(false);
 }
 
