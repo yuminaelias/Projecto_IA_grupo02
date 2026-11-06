@@ -1,0 +1,32 @@
+{
+  "S": 4,
+  "H": 3,
+  "pesados": [
+    4,
+    6
+  ],
+  "refrigerados": [
+    3
+  ],
+  "pilhas": [
+    [
+      7,
+      3
+    ],
+    [
+      6
+    ],
+    [
+      4,
+      1
+    ],
+    [
+      5,
+      2
+    ]
+  ],
+  "nivel": "Pequeno",
+  "indice": 7,
+  "semente": 202602,
+  "num_contentores": 7
+}
