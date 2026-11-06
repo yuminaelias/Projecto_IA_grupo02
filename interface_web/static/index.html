@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Porto de Maputo</title>
+  <link rel="stylesheet" href="/styles.css?v=20261105" />
+</head>
+<body>
+  <div class="app-shell">
+    <!-- TOPBAR MINIMALISTA -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg class="icon" viewBox="0 0 24 24">
+            <path d="M3 20h18M6 20V5h11v15M6 8h13M11 8V3h7l3 5M15 8v5m-2 0h4l-1 3h-2z" />
+          </svg>
+        </div>
+        <strong>Porto de Maputo</strong>
+      </div>
+
+      <nav class="mode-tabs" aria-label="Modos da aplicação">
+        <button id="tab-sim" class="active" type="button" data-mode="sim">Simulador</button>
+        <button id="tab-manual" type="button" data-mode="manual">Modo Manual</button>
+        <button id="tab-lab" type="button" data-mode="lab">Métricas &amp; Gráficos</button>
+      </nav>
+
+      <div class="instance">
+        <select id="instance-select" aria-label="Seleccionar instância">
+          <option value="base">Base (S=4, H=4, N=10)</option>
+          <option value="pequena">Pequena (S=3, H=3, N=6)</option>
+          <option value="media">Média (S=5, H=4, N=12)</option>
+          <option value="grande">Grande (S=6, H=5, N=16)</option>
+          <option value="custom">+ Personalizar...</option>
+        </select>
+      </div>
+    </header>
+
+    <!-- WORKSPACE PRINCIPAL (ABAS 1 E 2: SIMULADOR & MODO MANUAL) -->
+    <main id="workspace-view" class="workspace">
+      <!-- PAINEL ESQUERDO -->
+      <aside class="panel left-panel">
+        <!-- MODO SIMULADOR -->
+        <div id="left-sim-panel">
+          <div class="field-label first-label">Algoritmo</div>
+          <div id="algo-grid" class="algo-grid">
+            <button type="button" data-algo="BFS">BFS</button>
+            <button type="button" data-algo="DFS">DFS</button>
+            <button type="button" data-algo="IDS">IDS</button>
+            <button type="button" data-algo="UCS">UCS</button>
+            <button type="button" data-algo="Gulosa">Gulosa</button>
+            <button type="button" data-algo="A*" class="selected">A*</button>
+            <button type="button" data-algo="IDA*" class="span-full">IDA*</button>
+          </div>
+
+          <div class="field-label">Heurística</div>
+          <div id="heuristic-grid" class="heuristics-row">
+            <button type="button" data-h="h0">h0</button>
+            <button type="button" data-h="h1">h1</button>
+            <button type="button" data-h="h2" class="selected">h2</button>
+          </div>
+
+          <div class="inspector">
+            <dl>
+              <div><dt>g</dt><dd id="insp-g">0,0</dd></div>
+              <div><dt>h1</dt><dd id="insp-h1">2,0</dd></div>
+              <div><dt>h2</dt><dd id="insp-h2">4,4</dd></div>
+              <div class="total"><dt>f</dt><dd id="insp-f">4,4</dd></div>
+            </dl>
+          </div>
+
+          <button id="btn-solve" class="primary-action" type="button">
+            <svg class="icon" viewBox="0 0 24 24"><path d="m9 7 7 5-7 5z" /></svg>
+            <span id="btn-solve-label">Simular</span>
+          </button>
+        </div>
+
+        <!-- MODO OPERADOR MANUAL -->
+        <div id="left-manual-panel" class="hidden">
+          <div class="manual-heading">
+            <h2 class="panel-heading">Regras</h2>
+            <div class="manual-actions-top">
+              <button id="btn-manual-undo" type="button" title="Desfazer última acção">↶ Undo</button>
+              <button id="btn-manual-reset" type="button" title="Reiniciar instância">
+                <svg class="icon" viewBox="0 0 24 24">
+                  <path d="M4 10a8 8 0 1 1 2 7" /><path d="M4 4v6h6" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="rules">
+            <div class="rule"><b>01</b><span><strong>Altura máx.</strong><small id="rule-h-text">H = 4</small></span></div>
+            <div class="rule"><b>02</b><span><strong>Levantar</strong><small id="rule-lift-text">Custo 0,0 · próximo</small></span></div>
+            <div class="rule"><b>03</b><span><strong>Mover(i, j)</strong><small>1 + 0,1 × |i − j|</small></span></div>
+            <div class="rule"><b>04</b><span><strong>Refrig. (R)</strong><small id="rule-reefer-text">Pilhas 1 e 2</small></span></div>
+            <div class="rule"><b>05</b><span><strong>Pesados (P)</strong><small>Nunca sobre leve</small></span></div>
+          </div>
+
+          <div class="comparison">
+            <div>
+              <b id="manual-cost-display">0,0</b>
+              <small>Teu custo</small>
+            </div>
+            <div class="optimum">
+              <b id="manual-optimum-display">4,8</b>
+              <small>Óptimo</small>
+            </div>
+          </div>
+
+          <button id="btn-manual-hint" class="hint-button" type="button">
+            <svg class="icon" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="7" /><circle cx="12" cy="12" r="2" /><path d="M12 2v3m0 14v3M2 12h3m14 0h3" />
+            </svg>
+            Dica A*
+          </button>
+
+          <div id="manual-hint-box" class="manual-hint-box hidden"></div>
+        </div>
+      </aside>
+
+      <!-- PALCO CENTRAL: PÁTIO DE CONTENTORES & PÓRTICO RTG -->
+      <section class="yard-stage">
+        <div class="yard-ribbon">
+          <div class="ribbon-metric target-stat">
+            <span>Alvo</span>
+            <b id="ribbon-target">#1</b>
+          </div>
+          <div class="ribbon-metric">
+            <span>Passo</span>
+            <b id="ribbon-step">0 / 14</b>
+          </div>
+          <div class="ribbon-metric">
+            <span>Custo g</span>
+            <b id="ribbon-cost">0,0</b>
+          </div>
+          <div class="ribbon-metric">
+            <span>Acção</span>
+            <b id="ribbon-last-action">—</b>
+          </div>
+        </div>
+
+        <div class="yard-title">
+          <b id="yard-instance-title">Pátio de Contentores</b>
+          <div class="legend-pills">
+            <span class="pill-legend target-pill">Alvo</span>
+            <span class="pill-legend reefer-pill">❄ Refrig.</span>
+            <span class="pill-legend heavy-pill">Pesado</span>
+            <span class="pill-legend std-pill">Leve</span>
+          </div>
+        </div>
+
+        <!-- ZONA DO PÓRTICO RTG ANIMADO (LIMPA E SEM SOBREPOSIÇÃO) -->
+        <div class="crane-zone">
+          <div class="crane-beam">
+            <span>RTG—02</span>
+            <i id="crane-action-badge"></i>
+          </div>
+          <div class="crane-leg left"></div>
+          <div class="crane-leg right"></div>
+          <div id="crane-trolley" class="trolley" style="left: 12.5%;">
+            <div class="trolley-unit"></div>
+            <div class="cables"></div>
+            <div id="crane-spreader" class="spreader"></div>
+          </div>
+        </div>
+
+        <!-- GRELHA DE PILHAS DE CONTENTORES -->
+        <div id="stacks-container" class="stacks"></div>
+
+        <!-- BARRA DE MENSAGEM DE SELECÇÃO / FEEDBACK MANUAL -->
+        <div id="selection-message" class="selection-message hidden"></div>
+
+        <!-- CONTROLOS DE REPRODUÇÃO PASSO A PASSO -->
+        <div id="playback-bar" class="playback">
+          <div class="transport">
+            <button id="btn-first" type="button" title="Início">│‹</button>
+            <button id="btn-prev" type="button" title="Anterior">‹</button>
+            <button id="btn-play" class="play" type="button">
+              <svg id="icon-play" class="icon" viewBox="0 0 24 24"><path d="m9 7 7 5-7 5z" /></svg>
+              <span id="label-play">Play</span>
+            </button>
+            <button id="btn-next" type="button" title="Seguinte">›</button>
+            <button id="btn-last" type="button" title="Fim">›│</button>
+          </div>
+          <div id="timeline-steps" class="timeline"></div>
+          <select id="speed-select" aria-label="Velocidade de reprodução">
+            <option value="0.5">0,5×</option>
+            <option value="1" selected>1×</option>
+            <option value="2">2×</option>
+          </select>
+        </div>
+
+        <!-- GAVETA DISCRETA DE REGRAS DO DOMÍNIO -->
+        <div id="defense-box" class="defense">
+          <button id="defense-toggle" class="defense-toggle" type="button">
+            <b>Regras do domínio</b>
+            <i id="defense-toggle-icon">+</i>
+          </button>
+          <div id="defense-options" class="defense-options hidden">
+            <button id="mod-reefer3" class="toggle" type="button">
+              <i><span></span></i>Permitir R na Pilha 3
+            </button>
+            <button id="mod-liftCost" class="toggle" type="button">
+              <i><span></span></i>Custo de levantar = 0,5
+            </button>
+            <button id="mod-separateR" class="toggle" type="button">
+              <i><span></span></i>Proibir dois R na mesma pilha
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAINEL DIREITO: MÉTRICAS E ACÇÕES -->
+      <aside class="panel right-panel">
+        <h2 class="panel-heading">Métricas</h2>
+
+        <div class="kpi-grid">
+          <div class="kpi">
+            <span>Custo</span>
+            <b id="kpi-cost">4,8</b>
+          </div>
+          <div class="kpi">
+            <span>Passos</span>
+            <b id="kpi-length">14</b>
+          </div>
+          <div class="kpi">
+            <span>Expandidos</span>
+            <b id="kpi-expanded">27</b>
+          </div>
+          <div class="kpi">
+            <span>Gerados</span>
+            <b id="kpi-generated">79</b>
+          </div>
+          <div class="kpi">
+            <span>Fronteira</span>
+            <b id="kpi-frontier">46</b>
+          </div>
+          <div class="kpi">
+            <span>Tempo</span>
+            <b id="kpi-time">0,004s</b>
+          </div>
+        </div>
+
+        <div class="branching">
+          <b id="kpi-bstar">b* = 1,0839</b>
+          <span id="kpi-memory">0,03 MB</span>
+        </div>
+
+        <div class="log-title">
+          <h2 class="panel-heading">Acções</h2>
+        </div>
+
+        <div id="action-log" class="action-log"></div>
+
+        <div id="thresholds-box" class="thresholds hidden">
+          <span>Patamares IDA*</span>
+          <div id="thresholds-list" class="thresholds-list"></div>
+        </div>
+      </aside>
+    </main>
+
+    <!-- ABA 3: MÉTRICAS & GRÁFICOS -->
+    <main id="lab-view" class="laboratory hidden">
+      <div class="lab-header">
+        <div>
+          <h1>Comparação de Algoritmos</h1>
+        </div>
+        <div class="lab-actions-summary">
+          <button id="btn-run-benchmark" class="primary-action lab-run-btn" type="button">
+            ▶ Executar Comparação
+          </button>
+          <div class="lab-summary">
+            <div><span>Algoritmos</span><b id="lab-runs-count">11</b></div>
+            <div><span>Óptimo</span><b id="lab-best-cost">4,8</b></div>
+          </div>
+        </div>
+      </div>
+
+      <section class="lab-table-card">
+        <div class="table-head">
+          <b id="lab-table-subtitle">Resultados</b>
+          <button id="btn-export-csv" type="button">⬇ CSV</button>
+        </div>
+        <div class="table-wrap">
+          <table id="lab-table">
+            <thead>
+              <tr>
+                <th>Algoritmo</th>
+                <th>Status</th>
+                <th>Custo</th>
+                <th>Passos</th>
+                <th>Expandidos</th>
+                <th>Gerados</th>
+                <th>Re-exp.</th>
+                <th>Fronteira</th>
+                <th>b*</th>
+                <th>Tempo (s)</th>
+                <th>Memória (MB)</th>
+              </tr>
+            </thead>
+            <tbody id="lab-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="chart-tabs">
+        <button type="button" class="active" data-chart="expanded">Nós expandidos (log)</button>
+        <button type="button" data-chart="memory">Fronteira (A* vs. IDA*)</button>
+        <button type="button" data-chart="ratio">Rácio C / C*</button>
+      </div>
+
+      <div class="charts">
+        <section id="chart-card-expanded" class="chart-card active">
+          <div class="chart-heading"><b>Nós expandidos (escala log₁₀)</b></div>
+          <div id="svg-chart-expanded" class="chart-svg-wrap"></div>
+        </section>
+
+        <section id="chart-card-memory" class="chart-card">
+          <div class="chart-heading"><b>Fronteira máxima (A* vs. IDA*)</b></div>
+          <div id="svg-chart-memory" class="chart-svg-wrap"></div>
+        </section>
+
+        <section id="chart-card-ratio" class="chart-card">
+          <div class="chart-heading"><b>Qualidade da solução (C / C*)</b></div>
+          <div id="svg-chart-ratio" class="chart-svg-wrap"></div>
+        </section>
+      </div>
+    </main>
+
+    <!-- MODAL PARA CRIAR / EDITAR INSTÂNCIA PERSONALIZADA -->
+    <dialog id="custom-instance-dialog" class="custom-dialog">
+      <form id="custom-instance-form" method="dialog">
+        <div class="dialog-header">
+          <h3>Personalizar instância</h3>
+          <button id="btn-close-dialog" type="button" aria-label="Fechar">✕</button>
+        </div>
+        <div class="dialog-body">
+          <div class="dialog-row">
+            <label>Pilhas (S)
+              <input id="inp-S" type="number" min="2" max="6" value="4" required />
+            </label>
+            <label>Altura (H)
+              <input id="inp-H" type="number" min="2" max="6" value="4" required />
+            </label>
+          </div>
+          <label>Pilhas (JSON de baixo para cima)
+            <input id="inp-pilhas" type="text" value="[[8, 2, 10], [5, 1, 6], [9, 4], [7, 3]]" required />
+          </label>
+          <div class="dialog-row">
+            <label>Pesados
+              <input id="inp-pesados" type="text" value="5, 7, 8, 9" />
+            </label>
+            <label>Refrigerados
+              <input id="inp-refrigerados" type="text" value="2, 5" />
+            </label>
+          </div>
+          <div id="dialog-error" class="dialog-error hidden"></div>
+        </div>
+        <div class="dialog-footer">
+          <button id="btn-cancel-dialog" type="button" class="btn-secondary">Cancelar</button>
+          <button type="submit" class="primary-action">Aplicar</button>
+        </div>
+      </form>
+    </dialog>
+  </div>
+
+  <script src="/app.js?v=20261105"></script>
+</body>
+</html>
