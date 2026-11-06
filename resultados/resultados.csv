@@ -1,0 +1,50 @@
+instancia,nivel,ficheiro,S,H,N,num_contentores,pesados,refrigerados,algoritmo,heuristica,status,resolvido,custo,comprimento,nos_expandidos,nos_gerados,nos_reexpandidos,max_fronteira,tempo_s,memoria_mb
+Base,Base,base.json,4,4,10,10,5|7|8|9,2|5,BFS,—,falhou (tempo),False,,0,43839,328705,0,37412,15.016585,38.055149
+Base,Base,base.json,4,4,10,10,5|7|8|9,2|5,DFS,—,falhou (tempo),False,,0,7200,433273,0,289,15.008471,0.093079
+Base,Base,base.json,4,4,10,10,5|7|8|9,2|5,IDS,—,falhou (tempo),False,,0,7192,426837,6359,55,15.002547,0.194000
+Base,Base,base.json,4,4,10,10,5|7|8|9,2|5,UCS,—,ok,True,4.8,14,1534,12080,0,2920,0.522584,2.131237
+Base,Base,base.json,4,4,10,10,5|7|8|9,2|5,Gulosa,h1,ok,True,5.6,15,51,311,0,260,0.019699,0.153481
+Base,Base,base.json,4,4,10,10,5|7|8|9,2|5,A*,h1,ok,True,4.8,14,123,629,0,504,0.048374,0.271954
+Base,Base,base.json,4,4,10,10,5|7|8|9,2|5,IDA*,h2,ok,True,4.8,14,64,601,37,104,0.041796,0.050804
+Pequeno_0,Pequeno,Pequeno_0.json,4,4,6,6,6,3,BFS,—,ok,True,0.0,6,1154,8577,0,1314,0.311896,0.826496
+Pequeno_0,Pequeno,Pequeno_0.json,4,4,6,6,6,3,DFS,—,falhou (tempo),False,,0,8016,459048,0,288,15.007452,0.088806
+Pequeno_0,Pequeno,Pequeno_0.json,4,4,6,6,6,3,IDS,—,falhou (tempo),False,,0,9481,457442,8729,56,15.007538,0.162109
+Pequeno_0,Pequeno,Pequeno_0.json,4,4,6,6,6,3,UCS,—,ok,True,0.0,6,6,40,0,34,0.001384,0.012596
+Pequeno_0,Pequeno,Pequeno_0.json,4,4,6,6,6,3,Gulosa,h1,ok,True,0.0,6,6,40,0,34,0.001557,0.015907
+Pequeno_0,Pequeno,Pequeno_0.json,4,4,6,6,6,3,A*,h1,ok,True,0.0,6,6,40,0,34,0.001667,0.015221
+Pequeno_0,Pequeno,Pequeno_0.json,4,4,6,6,6,3,IDA*,h2,ok,True,0.0,6,6,40,0,34,0.001892,0.014259
+Pequeno_5,Pequeno,Pequeno_5.json,4,4,7,7,5|7,4,BFS,—,ok,True,0.0,7,2621,19799,0,2878,0.839209,2.509998
+Pequeno_5,Pequeno,Pequeno_5.json,4,4,7,7,5|7,4,DFS,—,falhou (tempo),False,,0,11965,454233,0,290,15.000677,0.089989
+Pequeno_5,Pequeno,Pequeno_5.json,4,4,7,7,5|7,4,IDS,—,falhou (tempo),False,,0,7508,435831,6617,55,15.003665,0.186234
+Pequeno_5,Pequeno,Pequeno_5.json,4,4,7,7,5|7,4,UCS,—,ok,True,0.0,7,7,56,0,49,0.002205,0.017639
+Pequeno_5,Pequeno,Pequeno_5.json,4,4,7,7,5|7,4,Gulosa,h1,ok,True,0.0,7,7,56,0,49,0.002420,0.021118
+Pequeno_5,Pequeno,Pequeno_5.json,4,4,7,7,5|7,4,A*,h1,ok,True,0.0,7,7,56,0,49,0.002524,0.022301
+Pequeno_5,Pequeno,Pequeno_5.json,4,4,7,7,5|7,4,IDA*,h2,ok,True,0.0,7,7,56,0,49,0.002822,0.019775
+Medio_0,Medio,Medio_0.json,4,4,10,10,6|7,3|4,BFS,—,falhou (tempo),False,,0,44351,330363,0,50035,15.006216,42.908909
+Medio_0,Medio,Medio_0.json,4,4,10,10,6|7,3|4,DFS,—,falhou (tempo),False,,0,6919,429284,0,289,15.008995,0.093887
+Medio_0,Medio,Medio_0.json,4,4,10,10,6|7,3|4,IDS,—,falhou (tempo),False,,0,8956,427100,7434,58,15.007152,0.412025
+Medio_0,Medio,Medio_0.json,4,4,10,10,6|7,3|4,UCS,—,ok,True,3.4,13,87,597,0,280,0.022891,0.134975
+Medio_0,Medio,Medio_0.json,4,4,10,10,6|7,3|4,Gulosa,h1,ok,True,3.4,13,14,96,0,82,0.004282,0.041992
+Medio_0,Medio,Medio_0.json,4,4,10,10,6|7,3|4,A*,h1,ok,True,3.4,13,18,112,0,94,0.005805,0.047470
+Medio_0,Medio,Medio_0.json,4,4,10,10,6|7,3|4,IDA*,h2,ok,True,3.4,13,14,98,1,80,0.005484,0.034706
+Medio_5,Medio,Medio_5.json,4,4,11,11,2|5|11,3|6,BFS,—,falhou (tempo),False,,0,49599,334907,0,50247,15.010594,44.595684
+Medio_5,Medio,Medio_5.json,4,4,11,11,2|5|11,3|6,DFS,—,falhou (tempo),False,,0,9751,429464,0,271,15.001146,0.089821
+Medio_5,Medio,Medio_5.json,4,4,11,11,2|5|11,3|6,IDS,—,falhou (tempo),False,,0,13742,433176,12475,48,15.003982,0.387329
+Medio_5,Medio,Medio_5.json,4,4,11,11,2|5|11,3|6,UCS,—,ok,True,1.1,12,15,102,0,78,0.003700,0.030869
+Medio_5,Medio,Medio_5.json,4,4,11,11,2|5|11,3|6,Gulosa,h1,ok,True,1.1,12,12,85,0,73,0.003581,0.038338
+Medio_5,Medio,Medio_5.json,4,4,11,11,2|5|11,3|6,A*,h1,ok,True,1.1,12,12,85,0,73,0.003907,0.034210
+Medio_5,Medio,Medio_5.json,4,4,11,11,2|5|11,3|6,IDA*,h2,ok,True,1.1,12,12,87,0,75,0.004549,0.032669
+Grande_0,Grande,Grande_0.json,5,4,17,17,1|6|10|15|16,4|7|12,BFS,—,falhou (tempo),False,,0,39743,299054,0,50174,15.011619,43.456219
+Grande_0,Grande,Grande_0.json,5,4,17,17,1|6|10|15|16,4|7|12,DFS,—,falhou (tempo),False,,0,3158,383449,0,327,15.013961,0.099869
+Grande_0,Grande,Grande_0.json,5,4,17,17,1|6|10|15|16,4|7|12,IDS,—,falhou (tempo),False,,0,8537,389613,7101,45,15.006888,0.356247
+Grande_0,Grande,Grande_0.json,5,4,17,17,1|6|10|15|16,4|7|12,UCS,—,ok,True,2.3,19,45,347,0,222,0.014082,0.084919
+Grande_0,Grande,Grande_0.json,5,4,17,17,1|6|10|15|16,4|7|12,Gulosa,h1,ok,True,2.3,19,19,162,0,143,0.007216,0.057571
+Grande_0,Grande,Grande_0.json,5,4,17,17,1|6|10|15|16,4|7|12,A*,h1,ok,True,2.3,19,23,185,0,162,0.009389,0.069153
+Grande_0,Grande,Grande_0.json,5,4,17,17,1|6|10|15|16,4|7|12,IDA*,h2,ok,True,2.3,19,21,175,2,144,0.010098,0.060928
+Grande_5,Grande,Grande_5.json,6,5,22,22,6|8|11|15|19|20|22,2|7|12|17|21,BFS,—,falhou (tempo),False,,0,14399,247209,0,61347,15.021905,37.428745
+Grande_5,Grande,Grande_5.json,6,5,22,22,6|8|11|15|19|20|22,2|7|12|17|21,DFS,—,falhou (tempo),False,,0,1067,334956,0,961,15.020884,0.286842
+Grande_5,Grande,Grande_5.json,6,5,22,22,6|8|11|15|19|20|22,2|7|12|17|21,IDS,—,falhou (tempo),False,,0,1118,333767,644,90,15.024107,0.133057
+Grande_5,Grande,Grande_5.json,6,5,22,22,6|8|11|15|19|20|22,2|7|12|17|21,UCS,—,ok,True,2.3,24,112,2021,0,1161,0.106637,0.508034
+Grande_5,Grande,Grande_5.json,6,5,22,22,6|8|11|15|19|20|22,2|7|12|17|21,Gulosa,h1,ok,True,2.3,24,25,376,0,351,0.020922,0.151985
+Grande_5,Grande,Grande_5.json,6,5,22,22,6|8|11|15|19|20|22,2|7|12|17|21,A*,h1,ok,True,2.3,24,25,376,0,351,0.022487,0.146301
+Grande_5,Grande,Grande_5.json,6,5,22,22,6|8|11|15|19|20|22,2|7|12|17|21,IDA*,h2,ok,True,2.3,24,25,389,1,344,0.026469,0.132446
