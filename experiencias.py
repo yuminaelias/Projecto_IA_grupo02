@@ -32,19 +32,21 @@ RAIZ: Path = Path(__file__).parent
 if str(RAIZ) not in sys.path:
     sys.path.insert(0, str(RAIZ))
 
-import matplotlib
-matplotlib.use("Agg")  # backend headless — não abre janela
-import matplotlib.pyplot as plt
-import matplotlib.font_manager as fm
-
-# Configuração tipográfica para texto em português (sem acentos no gráfico, mas
-# com suporte completo Unicode).
 try:
-    fm.fontManager.addfont("/usr/share/fonts/truetype/chinese/NotoSansSC-Regular.ttf")
-except Exception:
-    pass
-plt.rcParams["font.sans-serif"] = ["DejaVu Sans", "Noto Sans SC", "Liberation Sans"]
-plt.rcParams["axes.unicode_minus"] = False
+    import matplotlib
+    matplotlib.use("Agg")  # backend headless — não abre janela
+    import matplotlib.pyplot as plt
+    import matplotlib.font_manager as fm
+
+    try:
+        fm.fontManager.addfont("/usr/share/fonts/truetype/chinese/NotoSansSC-Regular.ttf")
+    except Exception:
+        pass
+    plt.rcParams["font.sans-serif"] = ["DejaVu Sans", "Noto Sans SC", "Liberation Sans"]
+    plt.rcParams["axes.unicode_minus"] = False
+except ImportError:  # pragma: no cover — permite importar experiencias sem matplotlib instalado
+    matplotlib = None  # type: ignore
+    plt = None  # type: ignore
 
 from dominio import ProblemaContentores
 from buscas import bfs, dfs, ids, ucs, gulosa, a_estrela, ida_estrela
