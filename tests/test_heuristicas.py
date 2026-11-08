@@ -167,6 +167,28 @@ def test_h_menor_ou_igual_h_estrela_todos_estados():
         assert 0.0 <= val_h1 <= val_h2 + 1e-6 <= hs + 1e-6
 
 
+def test_h2_nao_sobrestima_no_contraexemplo_de_cinco_contentores():
+    """Regressão para um estado em que a antiga estimativa h2 excedia h*."""
+    estado = EstadoContentores(
+        pilhas=((2,), (1, 4, 5), (3,)),
+        proximo=1,
+    )
+    dominio = DominioReferencia(
+        S=3,
+        H=5,
+        pesados=frozenset(),
+        refrigerados=frozenset(),
+        max_contentor=5,
+    )
+
+    custo_otimo = dominio._calcular_ucs(estado)
+
+    assert custo_otimo == 3.4
+    assert h1(estado, dominio) == 2.0
+    assert h2(estado, dominio) == 2.2
+    assert h2(estado, dominio) <= custo_otimo
+
+
 def test_heuristicas_instancia_base_e_propriedades():
     """Verifica os valores das heurísticas na instância base e em estados-limite."""
     s_base = EstadoContentores(
@@ -187,7 +209,7 @@ def test_heuristicas_instancia_base_e_propriedades():
 
     assert val_h0 == 0.0
     assert val_h1 == 2.0
-    assert val_h2 == 4.4
+    assert val_h2 == 2.2
     assert 0.0 <= val_h1 <= val_h2 <= 4.8
 
     s_obj = EstadoContentores(pilhas=((), (), (), ()), proximo=11)
